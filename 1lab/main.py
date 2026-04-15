@@ -575,11 +575,19 @@ class Game:
     def setup(self) -> None:
         print(f"{BOLD}Добро пожаловать в шахматы{RESET}")
         print("Выберите режим: classic / fantasy")
-        mode = input("> ").strip().lower()
-        if mode == "fantasy":
-            self.board.setup_fantasy()
-        else:
-            self.board.setup_classic()
+
+        while True:
+            mode = input("> ").strip().lower()
+
+            if mode == "classic":
+                self.board.setup_classic()
+                return
+
+            if mode == "fantasy":
+                self.board.setup_fantasy()
+                return
+
+            print("Некорректный режим. Введите только: classic или fantasy.")
 
     def switch_player(self) -> None:
         self.current_player = "black" if self.current_player == "white" else "white"
