@@ -1,11 +1,3 @@
-"""Demo script for the functional polygon API.
-
-Run:
-    python demo.py
-
-Images are saved to examples/out/.
-"""
-
 from __future__ import annotations
 
 from itertools import chain

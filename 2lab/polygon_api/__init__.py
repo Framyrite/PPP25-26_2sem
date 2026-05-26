@@ -1,5 +1,3 @@
-"""Functional polygon API package."""
-
 from .core import (
     Point,
     Polygon,
@@ -40,4 +38,42 @@ from .core import (
 )
 from .visualization import plot_polygons
 
-__all__ = [name for name in globals() if not name.startswith("_")]
+__all__ = (
+    "Point",
+    "Polygon",
+    "agr_area",
+    "agr_max_side",
+    "agr_min_area",
+    "agr_origin_nearest",
+    "agr_perimeter",
+    "area",
+    "count_2D",
+    "distance",
+    "duplicate_iterator",
+    "flt_angle_point",
+    "flt_convex_polygon",
+    "flt_intersects_any",
+    "flt_point_inside",
+    "flt_polygon_angles_inside",
+    "flt_short_side",
+    "flt_square",
+    "gen_hexagon",
+    "gen_rectangle",
+    "gen_triangle",
+    "is_convex_polygon",
+    "perimeter",
+    "point",
+    "point_in_convex_polygon",
+    "polygon",
+    "polygon_intersects",
+    "plot_polygons",
+    "side_lengths",
+    "signed_area",
+    "take",
+    "tr_homothety",
+    "tr_rotate",
+    "tr_symmetry",
+    "tr_translate",
+    "zip_polygons",
+    "zip_tuple",
+)

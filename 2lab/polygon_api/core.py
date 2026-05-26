@@ -1,12 +1,3 @@
-"""Functional API for generation, transformation and analysis of 2D polygons.
-
-The project intentionally keeps polygons immutable:
-    Polygon = tuple[tuple[float, float], ...]
-
-Sequences of polygons are treated as iterators and are processed with map(),
-filter(), functools.reduce() and itertools utilities.
-"""
-
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator
