@@ -41,8 +41,15 @@ def test_generators_return_infinite_non_overlapping_polygons() -> None:
     hexagons = take(7, gen_hexagon(radius=0.5, gap=0.5))
 
     assert len(rectangles) == len(triangles) == len(hexagons) == 7
-    assert all(isinstance(poly, tuple) for poly in chain(rectangles, triangles, hexagons))
-    assert all(not polygon_intersects(a, b) for a, b in zip(rectangles, rectangles[1:]))
+    assert all(
+        isinstance(
+            poly,
+            tuple) for poly in chain(
+            rectangles,
+            triangles,
+            hexagons))
+    assert all(not polygon_intersects(a, b)
+               for a, b in zip(rectangles, rectangles[1:]))
 
 
 @pytest.mark.parametrize(
@@ -84,11 +91,34 @@ def test_all_six_filters_are_usable_with_filter() -> None:
     outer = polygon(((-1, -1), (3, -1), (3, 3), (-1, 3)))
 
     assert tuple(filter(flt_convex_polygon, (square, concave))) == (square,)
-    assert tuple(filter(flt_angle_point((0, 0)), (square, small_triangle))) == (square, small_triangle)
-    assert tuple(filter(flt_square(1), (square, small_triangle))) == (small_triangle,)
-    assert tuple(filter(flt_short_side(0.5), (square, small_triangle))) == (small_triangle,)
-    assert tuple(filter(flt_point_inside((1, 1)), (square, small_triangle))) == (square,)
-    assert tuple(filter(flt_polygon_angles_inside(small_triangle), (square, outer))) == (square, outer)
+    assert tuple(
+        filter(
+            flt_angle_point(
+                (0, 0)), (square, small_triangle))) == (
+        square, small_triangle)
+    assert tuple(
+        filter(
+            flt_square(1), (square, small_triangle))) == (
+        small_triangle,)
+    assert tuple(
+        filter(
+            flt_short_side(0.5),
+            (square,
+             small_triangle))) == (
+        small_triangle,
+    )
+    assert tuple(
+        filter(
+            flt_point_inside(
+                (1, 1)), (square, small_triangle))) == (
+        square,)
+    assert tuple(
+        filter(
+            flt_polygon_angles_inside(small_triangle),
+            (square,
+             outer))) == (
+        square,
+        outer)
 
 
 def test_decorators_filter_and_transform_iterator_arguments() -> None:
@@ -135,5 +165,6 @@ def test_zip_polygons_matches_assignment_example() -> None:
 
 
 def test_extra_utilities() -> None:
-    assert take(3, count_2D(start=(1, 2), step=(2, -1))) == ((1, 2), (3, 1), (5, 0))
+    assert take(3, count_2D(start=(1, 2), step=(2, -1))
+                ) == ((1, 2), (3, 1), (5, 0))
     assert zip_tuple((1, 2), (3,), (4, 5)) == (1, 2, 3, 4, 5)

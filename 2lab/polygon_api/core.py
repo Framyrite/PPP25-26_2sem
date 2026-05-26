@@ -1,3 +1,12 @@
+"""Functional API for generation, transformation and analysis of 2D polygons.
+
+The project intentionally keeps polygons immutable:
+    Polygon = tuple[tuple[float, float], ...]
+
+Sequences of polygons are treated as iterators and are processed with map(),
+filter(), functools.reduce() and itertools utilities.
+"""
+
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator
@@ -68,7 +77,8 @@ def distance(a: Point, b: Point = (0.0, 0.0)) -> float:
 
 
 def side_lengths(poly: Polygon) -> tuple[float, ...]:
-    return tuple(map(lambda edge: distance(edge[0], edge[1]), _cyclic_pairs(poly)))
+    return tuple(map(lambda edge: distance(
+        edge[0], edge[1]), _cyclic_pairs(poly)))
 
 
 def perimeter(poly: Polygon) -> float:
@@ -79,7 +89,12 @@ def area(poly: Polygon) -> float:
     """Return polygon area by the shoelace formula."""
 
     twice_area = reduce(
-        lambda acc, edge: acc + edge[0][0] * edge[1][1] - edge[1][0] * edge[0][1],
+        lambda acc,
+        edge: acc +
+        edge[0][0] *
+        edge[1][1] -
+        edge[1][0] *
+        edge[0][1],
         _cyclic_pairs(poly),
         0.0,
     )
@@ -88,7 +103,12 @@ def area(poly: Polygon) -> float:
 
 def signed_area(poly: Polygon) -> float:
     twice_area = reduce(
-        lambda acc, edge: acc + edge[0][0] * edge[1][1] - edge[1][0] * edge[0][1],
+        lambda acc,
+        edge: acc +
+        edge[0][0] *
+        edge[1][1] -
+        edge[1][0] *
+        edge[0][1],
         _cyclic_pairs(poly),
         0.0,
     )
@@ -111,7 +131,12 @@ def _on_segment(a: Point, b: Point, p: Point, eps: float = EPS) -> bool:
     )
 
 
-def _segments_intersect(a: Point, b: Point, c: Point, d: Point, eps: float = EPS) -> bool:
+def _segments_intersect(
+    a: Point,
+    b: Point,
+    c: Point,
+    d: Point,
+        eps: float = EPS) -> bool:
     o1 = _orientation(a, b, c)
     o2 = _orientation(a, b, d)
     o3 = _orientation(c, d, a)
@@ -131,7 +156,7 @@ def _segments_intersect(a: Point, b: Point, c: Point, d: Point, eps: float = EPS
 
 
 def polygon_intersects(poly1: Polygon, poly2: Polygon) -> bool:
-    """Return True if polygons intersect or one contains a vertex of the other."""
+    """Return True if polygons intersect or contain each other."""
 
     edge_crossing = any(
         _segments_intersect(a, b, c, d)
@@ -141,19 +166,26 @@ def polygon_intersects(poly1: Polygon, poly2: Polygon) -> bool:
     if edge_crossing:
         return True
 
-    return point_in_convex_polygon(poly1[0], poly2) or point_in_convex_polygon(poly2[0], poly1)
+    return point_in_convex_polygon(
+        poly1[0], poly2) or point_in_convex_polygon(
+        poly2[0], poly1)
 
 
 def point_in_convex_polygon(p: Point, poly: Polygon, eps: float = EPS) -> bool:
-    """Return True if point is inside or on the boundary of a convex polygon."""
+    """Return True if point is inside or on the polygon boundary."""
 
     if not is_convex_polygon(poly):
         return False
 
     signs = tuple(
-        0 if abs(cross) <= eps else (1 if cross > 0 else -1)
-        for cross in map(lambda edge: _cross(edge[0], edge[1], p), _cyclic_pairs(poly))
-    )
+        0 if abs(cross) <= eps else (
+            1 if cross > 0 else -
+            1) for cross in map(
+            lambda edge: _cross(
+                edge[0],
+                edge[1],
+                p),
+            _cyclic_pairs(poly)))
     non_zero = tuple(filter(lambda sign: sign != 0, signs))
     return not non_zero or all(map(lambda sign: sign == non_zero[0], non_zero))
 
@@ -168,7 +200,8 @@ def is_convex_polygon(poly: Polygon, eps: float = EPS) -> bool:
         for cross in map(lambda t: _cross(t[0], t[1], t[2]), triples)
     )
     non_zero = tuple(filter(lambda sign: sign != 0, signs))
-    return bool(non_zero) and all(map(lambda sign: sign == non_zero[0], non_zero))
+    return bool(non_zero) and all(
+        map(lambda sign: sign == non_zero[0], non_zero))
 
 
 # ---------------------------------------------------------------------------
@@ -204,7 +237,7 @@ def gen_triangle(
     gap: float = 0.3,
     start: Point = (0.0, 0.0),
 ) -> Iterator[Polygon]:
-    """Generate an infinite sequence of non-overlapping equilateral triangles."""
+    """Generate infinite non-overlapping equilateral triangles."""
 
     sx, sy = start
     height = side * sqrt(3.0) / 2.0
@@ -258,9 +291,8 @@ def _decorate_iterable_args(
 
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        new_args = tuple(
-            map(lambda arg: operation(arg) if _is_polygon_iterator_arg(arg) else arg, args)
-        )
+        new_args = tuple(map(lambda arg: operation(
+            arg) if _is_polygon_iterator_arg(arg) else arg, args))
         new_kwargs = {
             key: operation(value) if _is_polygon_iterator_arg(value) else value
             for key, value in kwargs.items()
@@ -276,7 +308,9 @@ class PredicateDecorator:
 
     def __call__(self, target: Any) -> Any:
         if callable(target) and not _is_polygon(target):
-            return _decorate_iterable_args(target, lambda iterator: filter(self.predicate, iterator))
+            return _decorate_iterable_args(
+                target, lambda iterator: filter(
+                    self.predicate, iterator))
         return self.predicate(polygon(target))
 
 
@@ -286,7 +320,9 @@ class TransformDecorator:
 
     def __call__(self, target: Any) -> Any:
         if callable(target) and not _is_polygon(target):
-            return _decorate_iterable_args(target, lambda iterator: map(self.transform, iterator))
+            return _decorate_iterable_args(
+                target, lambda iterator: map(
+                    self.transform, iterator))
         return self.transform(polygon(target))
 
 
@@ -298,7 +334,8 @@ class TransformDecorator:
 
 
 def tr_translate(dx: float = 0.0, dy: float = 0.0) -> TransformDecorator:
-    return TransformDecorator(lambda poly: tuple(map(lambda p: (p[0] + dx, p[1] + dy), poly)))
+    return TransformDecorator(lambda poly: tuple(
+        map(lambda p: (p[0] + dx, p[1] + dy), poly)))
 
 
 def tr_rotate(
@@ -323,7 +360,7 @@ def tr_rotate(
 def tr_symmetry(
     axis: Literal["x", "y", "origin"] | float | tuple[Point, Point] = "x",
 ) -> TransformDecorator:
-    """Reflect polygons against x/y/origin, a line angle, or a line by 2 points.
+    """Reflect polygons against x/y/origin, angle, or line.
 
     axis="x"      -> (x, y) -> (x, -y)
     axis="y"      -> (x, y) -> (-x, y)
@@ -341,17 +378,32 @@ def tr_symmetry(
     def reflect_origin(poly: Polygon) -> Polygon:
         return tuple(map(lambda p: (-p[0], -p[1]), poly))
 
-    def reflect_line_by_angle(angle_degrees: float) -> Callable[[Polygon], Polygon]:
+    def reflect_line_by_angle(
+            angle_degrees: float) -> Callable[[Polygon], Polygon]:
         theta = radians(angle_degrees)
         cos_2t, sin_2t = cos(2.0 * theta), sin(2.0 * theta)
-        return lambda poly: tuple(map(lambda p: (p[0] * cos_2t + p[1] * sin_2t, p[0] * sin_2t - p[1] * cos_2t), poly))
 
-    def reflect_line_by_points(line: tuple[Point, Point]) -> Callable[[Polygon], Polygon]:
+        def reflect(poly: Polygon) -> Polygon:
+            return tuple(
+                map(
+                    lambda p: (
+                        p[0] * cos_2t + p[1] * sin_2t,
+                        p[0] * sin_2t - p[1] * cos_2t,
+                    ),
+                    poly,
+                )
+            )
+
+        return reflect
+
+    def reflect_line_by_points(
+            line: tuple[Point, Point]) -> Callable[[Polygon], Polygon]:
         (x1, y1), (x2, y2) = line
         dx, dy = x2 - x1, y2 - y1
         length_sq = dx * dx + dy * dy
         if length_sq <= EPS:
-            raise ValueError("Reflection line must be defined by two different points")
+            raise ValueError(
+                "Reflection line must be defined by two different points")
 
         def reflect(poly: Polygon) -> Polygon:
             def reflect_point(p: Point) -> Point:
@@ -378,9 +430,8 @@ def tr_symmetry(
 
 def tr_homothety(k: float, center: Point = (0.0, 0.0)) -> TransformDecorator:
     cx, cy = center
-    return TransformDecorator(
-        lambda poly: tuple(map(lambda p: (cx + k * (p[0] - cx), cy + k * (p[1] - cy)), poly))
-    )
+    return TransformDecorator(lambda poly: tuple(
+        map(lambda p: (cx + k * (p[0] - cx), cy + k * (p[1] - cy)), poly)))
 
 
 # ---------------------------------------------------------------------------
@@ -393,12 +444,17 @@ def flt_convex_polygon(target: Any) -> Any:
     """Predicate/decorator: keep only convex polygons."""
 
     if callable(target) and not _is_polygon(target):
-        return _decorate_iterable_args(target, lambda iterator: filter(is_convex_polygon, iterator))
+        return _decorate_iterable_args(
+            target, lambda iterator: filter(
+                is_convex_polygon, iterator))
     return is_convex_polygon(polygon(target))
 
 
-def flt_angle_point(target_point: Point, eps: float = EPS) -> PredicateDecorator:
-    return PredicateDecorator(lambda poly: any(map(lambda p: _close(p, target_point, eps), poly)))
+def flt_angle_point(
+        target_point: Point,
+        eps: float = EPS) -> PredicateDecorator:
+    return PredicateDecorator(lambda poly: any(
+        map(lambda p: _close(p, target_point, eps), poly)))
 
 
 def flt_square(max_area: float) -> PredicateDecorator:
@@ -406,23 +462,31 @@ def flt_square(max_area: float) -> PredicateDecorator:
 
 
 def flt_short_side(max_length: float) -> PredicateDecorator:
-    return PredicateDecorator(lambda poly: min(side_lengths(poly)) < max_length)
+    return PredicateDecorator(
+        lambda poly: min(
+            side_lengths(poly)) < max_length)
 
 
 def flt_point_inside(target_point: Point) -> PredicateDecorator:
-    return PredicateDecorator(lambda poly: point_in_convex_polygon(target_point, poly))
+    return PredicateDecorator(
+        lambda poly: point_in_convex_polygon(
+            target_point, poly))
 
 
 def flt_polygon_angles_inside(inner_polygon: Polygon) -> PredicateDecorator:
     inner = polygon(inner_polygon)
-    return PredicateDecorator(lambda outer: is_convex_polygon(outer) and any(map(lambda p: point_in_convex_polygon(p, outer), inner)))
+    return PredicateDecorator(lambda outer: is_convex_polygon(outer) and any(
+        map(lambda p: point_in_convex_polygon(p, outer), inner)))
 
 
-def flt_intersects_any(other_polygons: Iterable[Polygon]) -> PredicateDecorator:
-    """Extra utility predicate: keep polygons intersecting at least one polygon from a given collection."""
+def flt_intersects_any(
+    other_polygons: Iterable[Polygon],
+) -> PredicateDecorator:
+    """Keep polygons intersecting at least one polygon from collection."""
 
     others = tuple(map(polygon, other_polygons))
-    return PredicateDecorator(lambda poly: any(map(lambda other: polygon_intersects(poly, other), others)))
+    return PredicateDecorator(lambda poly: any(
+        map(lambda other: polygon_intersects(poly, other), others)))
 
 
 # ---------------------------------------------------------------------------
@@ -433,14 +497,12 @@ def flt_intersects_any(other_polygons: Iterable[Polygon]) -> PredicateDecorator:
 def agr_origin_nearest(polygons: Iterable[Polygon]) -> Point | None:
     """Return the vertex closest to the origin among all polygons."""
 
-    return reduce(
-        lambda best, p: p if best is None or distance(p) < distance(best) else best,
-        chain.from_iterable(polygons),
-        None,
-    )
+    return reduce(lambda best, p: p if best is None or distance(
+        p) < distance(best) else best, chain.from_iterable(polygons), None, )
 
 
-def agr_max_side(polygons: Iterable[Polygon]) -> tuple[Point, Point, float] | None:
+def agr_max_side(polygons: Iterable[Polygon]
+                 ) -> tuple[Point, Point, float] | None:
     """Return the longest side as (point1, point2, length)."""
 
     edges = chain.from_iterable(map(_cyclic_pairs, polygons))
@@ -456,11 +518,8 @@ def agr_max_side(polygons: Iterable[Polygon]) -> tuple[Point, Point, float] | No
 def agr_min_area(polygons: Iterable[Polygon]) -> float | None:
     """Return the smallest polygon area in a sequence."""
 
-    return reduce(
-        lambda best, poly: area(poly) if best is None or area(poly) < best else best,
-        polygons,
-        None,
-    )
+    return reduce(lambda best, poly: area(poly) if best is None or area(
+        poly) < best else best, polygons, None, )
 
 
 def agr_perimeter(polygons: Iterable[Polygon]) -> float:
@@ -484,7 +543,10 @@ def take(n: int, iterator: Iterable[Any]) -> tuple[Any, ...]:
     return tuple(islice(iterator, n))
 
 
-def count_2D(start: Point = (0.0, 0.0), step: Point = (1.0, 0.0)) -> Iterator[Point]:
+def count_2D(
+    start: Point = (
+        0.0, 0.0), step: Point = (
+            1.0, 0.0)) -> Iterator[Point]:
     """Generate an infinite arithmetic progression of 2D points."""
 
     sx, sy = start
@@ -499,16 +561,20 @@ def zip_tuple(*tuples: Iterable[Any]) -> tuple[Any, ...]:
 
 
 def zip_polygons(*iterators: Iterable[Polygon]) -> Iterator[Polygon]:
-    """Glue polygons from several sequences vertex-by-vertex by iterator position.
+    """Glue polygons from sequences by iterator position.
 
     The first polygons from all iterators are concatenated, then the second
     polygons, and so on. Iteration stops when the shortest input iterator ends.
     """
 
-    return map(lambda polys: tuple(chain.from_iterable(polys)), zip(*iterators))
+    return map(
+        lambda polys: tuple(
+            chain.from_iterable(polys)), zip(
+            *iterators))
 
 
-def duplicate_iterator(iterator: Iterable[Any], n: int = 2) -> tuple[Iterator[Any], ...]:
+def duplicate_iterator(
+        iterator: Iterable[Any], n: int = 2) -> tuple[Iterator[Any], ...]:
     """A small itertools-based helper useful in demos/tests."""
 
     return tee(iterator, n)

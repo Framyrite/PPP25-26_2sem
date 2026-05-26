@@ -1,3 +1,5 @@
+"""Visualization helpers for polygon iterators."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable

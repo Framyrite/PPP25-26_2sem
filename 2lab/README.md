@@ -143,30 +143,136 @@ functional-polygons/
 
 ## 4. Установка
 
+Проект находится в репозитории:
+
+```text
+https://github.com/Framyrite/PPP25-26_2sem
+```
+
+Сначала нужно скачать репозиторий:
+
+```bash
+git clone https://github.com/Framyrite/PPP25-26_2sem
+```
+
+После скачивания перейти в папку со второй лабораторной работой:
+
+```bash
+cd PPP25-26_2sem/2lab
+```
+
+Все следующие команды нужно выполнять именно из папки:
+
+```text
+PPP25-26_2sem/2lab
+```
+
+Проверить, что вы находитесь в нужной папке, можно командой:
+
 ### Windows PowerShell
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pwd
+```
+
+### Linux / macOS
+
+```bash
+pwd
+```
+
+В папке должны быть файлы и директории:
+
+```text
+demo.py
+interactive_case.py
+requirements.txt
+README.md
+polygon_api/
+tests/
+examples/
+```
+
+---
+
+### Windows PowerShell
+
+Создать виртуальное окружение:
+
+```powershell
+python -m venv venv
+```
+
+Активировать виртуальное окружение:
+
+```powershell
+.\venv\Scripts\Activate.ps1
 ```
 
 Если PowerShell запрещает запуск виртуального окружения:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 ```
 
-### Linux / macOS
+Установить зависимости:
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+```powershell
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
 ---
+
+### Linux / macOS
+
+Создать виртуальное окружение:
+
+```bash
+python3 -m venv venv
+```
+
+Активировать виртуальное окружение:
+
+```bash
+source venv/bin/activate
+```
+
+Установить зависимости:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+---
+
+### Проверка установки
+
+После установки зависимостей можно запустить тесты:
+
+```bash
+python -m pytest -q
+```
+
+Ожидаемый результат:
+
+```text
+9 passed
+```
+
+Также можно запустить демонстрацию:
+
+```bash
+python demo.py
+```
+
+После запуска изображения будут сохранены в папку:
+
+```text
+examples/out/
+```
 
 ## 5. Зависимости
 

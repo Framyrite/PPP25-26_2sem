@@ -1,3 +1,11 @@
+"""Demo script for the functional polygon API.
+
+Run:
+    python demo.py
+
+Images are saved to examples/out/.
+"""
+
 from __future__ import annotations
 
 from itertools import chain
@@ -38,15 +46,23 @@ def quads_between_rays(n: int = 15):
     def one(i: int):
         x1 = 0.7 + i * 0.45
         x2 = x1 + 0.3
-        return polygon(((x1, 0.35 * x1), (x2, 0.35 * x2), (x2, 1.1 * x2), (x1, 1.1 * x1)))
+        return polygon(
+            (
+                (x1, 0.35 * x1),
+                (x2, 0.35 * x2),
+                (x2, 1.1 * x2),
+                (x1, 1.1 * x1),
+            )
+        )
 
     return map(one, range(n))
 
 
 def save_base_sequences() -> None:
-    rectangles = take(7, gen_rectangle(width=1.2, height=0.8, start=(0, 0)))
+    rectangles = take(7, gen_rectangle(width=1.2, height=0.8))
     triangles = take(7, gen_triangle(side=1.1, start=(0, 1.8)))
     hexagons = take(7, gen_hexagon(radius=0.45, start=(0, 3.5)))
+
     plot_polygons(
         chain(rectangles, triangles, hexagons),
         title="Seven non-overlapping rectangles, triangles and hexagons",
@@ -58,49 +74,123 @@ def save_transformations() -> None:
     # 1. Three parallel bands at an acute angle.
     bands = chain.from_iterable(
         map(
-            lambda y: take(8, map(tr_rotate(22), gen_rectangle(width=0.8, height=0.35, gap=0.25, start=(0, y)))),
+            lambda y: take(
+                8,
+                map(
+                    tr_rotate(22),
+                    gen_rectangle(
+                        width=0.8,
+                        height=0.35,
+                        gap=0.25,
+                        start=(0, y),
+                    ),
+                ),
+            ),
             (0.0, 0.8, 1.6),
         )
     )
-    plot_polygons(bands, title="Three parallel bands", save_path=OUT / "02_parallel_bands.png")
+    plot_polygons(
+        bands,
+        title="Three parallel bands",
+        save_path=OUT / "02_parallel_bands.png",
+    )
 
     # 2. Two crossing bands; intersection is shifted away from the origin.
-    band_a = take(9, map(tr_translate(2.0, 0.8), map(tr_rotate(28), gen_rectangle(width=0.8, height=0.35, gap=0.18))))
-    band_b = take(9, map(tr_translate(1.0, 2.4), map(tr_rotate(-28), gen_rectangle(width=0.8, height=0.35, gap=0.18))))
-    plot_polygons(chain(band_a, band_b), title="Crossing bands away from origin", save_path=OUT / "03_crossing_bands.png")
+    band_a = take(
+        9,
+        map(
+            tr_translate(2.0, 0.8),
+            map(
+                tr_rotate(28),
+                gen_rectangle(width=0.8, height=0.35, gap=0.18),
+            ),
+        ),
+    )
+    band_b = take(
+        9,
+        map(
+            tr_translate(1.0, 2.4),
+            map(
+                tr_rotate(-28),
+                gen_rectangle(width=0.8, height=0.35, gap=0.18),
+            ),
+        ),
+    )
+    plot_polygons(
+        chain(band_a, band_b),
+        title="Crossing bands away from origin",
+        save_path=OUT / "03_crossing_bands.png",
+    )
 
     # 3. Two parallel triangle bands symmetric around the x-axis.
-    top = take(8, map(tr_translate(0.0, 1.1), gen_triangle(side=0.8, gap=0.25)))
+    top = take(
+        8,
+        map(
+            tr_translate(0.0, 1.1),
+            gen_triangle(side=0.8, gap=0.25),
+        ),
+    )
     bottom = tuple(map(tr_symmetry("x"), top))
-    plot_polygons(chain(top, bottom), title="Symmetric triangle bands", save_path=OUT / "04_symmetric_triangles.png")
+    plot_polygons(
+        chain(top, bottom),
+        title="Symmetric triangle bands",
+        save_path=OUT / "04_symmetric_triangles.png",
+    )
 
-    # 4. Quadrilaterals of different scale between two lines through the origin.
-    plot_polygons(quads_between_rays(12), title="Scaled quadrilaterals between rays", save_path=OUT / "05_quads_between_rays.png")
+    # 4. Quadrilaterals of different scale between two lines through origin.
+    plot_polygons(
+        quads_between_rays(12),
+        title="Scaled quadrilaterals between rays",
+        save_path=OUT / "05_quads_between_rays.png",
+    )
 
 
 def save_filter_scenarios() -> None:
     # Scenario 1: from p.4 figures, keep exactly six by area.
     filtered_six = tuple(filter(flt_square(0.7), quads_between_rays(15)))
-    plot_polygons(filtered_six, title="Filter scenario 1: exactly six polygons", save_path=OUT / "06_filter_exactly_six.png")
+    plot_polygons(
+        filtered_six,
+        title="Filter scenario 1: exactly six polygons",
+        save_path=OUT / "06_filter_exactly_six.png",
+    )
 
-    # Scenario 2: from >=15 scaled figures, select <=4 with a short side under threshold.
+    # Scenario 2: from >=15 scaled figures, select <=4 with a short side.
     base = polygon(((0, 0), (1, 0), (1, 1), (0, 1)))
-    scaled = map(lambda k: tr_translate(k * 1.8, 0)(tr_homothety(0.2 + k * 0.08)(base)), range(15))
+    scaled = map(
+        lambda k: tr_translate(k * 1.8, 0)(
+            tr_homothety(0.2 + k * 0.08)(base)
+        ),
+        range(15),
+    )
     small_short_side = tuple(filter(flt_short_side(0.5), scaled))
-    plot_polygons(small_short_side, title="Filter scenario 2: short side < 0.5", save_path=OUT / "07_filter_short_side.png")
+    plot_polygons(
+        small_short_side,
+        title="Filter scenario 2: short side < 0.5",
+        save_path=OUT / "07_filter_short_side.png",
+    )
 
-    # Scenario 3: from >=15 figures, keep polygons intersecting a reference polygon.
-    reference = polygon(((3.2, -0.3), (5.0, -0.3), (5.0, 1.0), (3.2, 1.0)))
+    # Scenario 3: from >=15 figures, keep polygons intersecting a reference.
+    reference = polygon(
+        ((3.2, -0.3), (5.0, -0.3), (5.0, 1.0), (3.2, 1.0))
+    )
     candidates = take(15, gen_rectangle(width=0.7, height=0.7, gap=0.15))
     intersecting = tuple(filter(flt_intersects_any((reference,)), candidates))
-    plot_polygons(chain((reference,), intersecting), title="Filter scenario 3: intersecting polygons", save_path=OUT / "08_filter_intersections.png")
+    plot_polygons(
+        chain((reference,), intersecting),
+        title="Filter scenario 3: intersecting polygons",
+        save_path=OUT / "08_filter_intersections.png",
+    )
 
 
 def save_zip_demo() -> None:
     upper = take(5, gen_triangle(side=0.8, start=(0, 0.7)))
     lower = tuple(map(tr_symmetry("x"), upper))
     glued = tuple(zip_polygons(upper, lower))
-    plot_polygons(glued, title="zip_polygons demo", save_path=OUT / "09_zip_polygons.png")
+    plot_polygons(
+        glued,
+        title="zip_polygons demo",
+        save_path=OUT / "09_zip_polygons.png",
+    )
 
 
 def print_aggregates() -> None:

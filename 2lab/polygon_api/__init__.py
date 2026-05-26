@@ -1,3 +1,5 @@
+"""Functional polygon API package."""
+
 from .core import (
     Point,
     Polygon,
