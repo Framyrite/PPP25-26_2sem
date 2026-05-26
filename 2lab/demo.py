@@ -80,7 +80,7 @@ def save_transformations() -> None:
 
 def save_filter_scenarios() -> None:
     # Scenario 1: from p.4 figures, keep exactly six by area.
-    filtered_six = tuple(filter(flt_square(0.42), quads_between_rays(15)))
+    filtered_six = tuple(filter(flt_square(0.7), quads_between_rays(15)))
     plot_polygons(filtered_six, title="Filter scenario 1: exactly six polygons", save_path=OUT / "06_filter_exactly_six.png")
 
     # Scenario 2: from >=15 scaled figures, select <=4 with a short side under threshold.
